@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from database.database import SessionLocal
 from database.models import ProcessingJob
 
@@ -34,7 +36,15 @@ def update_job_status(job_id, status):
     )
 
     if job:
+
         job.status = status
+
+        if status == "running":
+            job.started_at = datetime.utcnow()
+
+        elif status in ("completed", "failed"):
+            job.finished_at = datetime.utcnow()
+
         db.commit()
         db.refresh(job)
 
