@@ -408,7 +408,7 @@ cd backend
 
 .\venv\Scripts\Activate
 
-python -m uvicorn --version
+python -m uvicorn app:app --reload
 ```
 
 ---

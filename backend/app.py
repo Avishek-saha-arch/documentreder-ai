@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.upload import router as upload_router
 from database.database import engine
 from database.models import Base
+from routes.documents import router as documents_router
 
 app = FastAPI(
     title="AI Document Reader",
@@ -21,6 +22,7 @@ app.add_middleware(
 
 Base.metadata.create_all(bind=engine)
 app.include_router(upload_router)
+app.include_router(documents_router)
 
 @app.get("/")
 def home():

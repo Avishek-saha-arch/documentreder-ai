@@ -1,11 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UploadBox from "../components/UploadBox";
-import { uploadDocument } from "../api/api";
+import DocumentCard from "../components/DocumentCard";
+import { uploadDocument, getDocuments } from "../api/api";
 
 export default function Home() {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [documents, setDocuments] = useState([]);
+
+  const loadDocuments = async () => {
+    try {
+      const data = await getDocuments();
+      setDocuments(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadDocuments();
+  }, []);
 
   const handleUpload = async () => {
     if (!file) {
@@ -20,6 +35,10 @@ export default function Home() {
       const result = await uploadDocument(file);
 
       setMessage(result.message);
+
+      // Refresh document list
+      await loadDocuments();
+
     } catch (error) {
       console.error(error);
 
@@ -85,6 +104,23 @@ export default function Home() {
           <div className="mt-6 bg-green-100 border border-green-300 text-green-700 p-4 rounded-lg">
             {message}
           </div>
+        )}
+
+        <h2 className="text-2xl font-bold mt-10">
+          Uploaded Documents
+        </h2>
+
+        {documents.length === 0 ? (
+          <p className="text-gray-500 mt-4">
+            No documents uploaded yet.
+          </p>
+        ) : (
+          documents.map((doc) => (
+            <DocumentCard
+              key={doc.id}
+              document={doc}
+            />
+          ))
         )}
 
       </div>

@@ -17,5 +17,13 @@ export const uploadDocument = async (file) => {
 
   return response.data;
 };
+export const getDocuments = async () => {
+  const response = await api.get("/documents/");
+  return response.data;
+};
 
+export const getDocument = async (id) => {
+  const response = await api.get(`/documents/${id}`);
+  return response.data;
+};
 export default api;
