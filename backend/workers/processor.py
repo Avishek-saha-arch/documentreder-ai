@@ -5,7 +5,11 @@ from services.worker_service import get_pending_job
 from services.job_service import update_job_status
 from services.pdf_service import convert_pdf_to_images
 from services.ocr_service import extract_text
-from services.extraction_service import save_raw_text
+from services.extraction_service import (
+    save_raw_text,
+    save_extracted_data,
+)
+from services.ai_service import extract_document_data
 
 print("🚀 Worker Started")
 
@@ -25,10 +29,12 @@ while True:
 
             print(f"Reading PDF: {pdf_path}")
 
+            # Convert PDF into images
             image_paths = convert_pdf_to_images(str(pdf_path))
 
             full_text = ""
 
+            # OCR each page
             for image in image_paths:
 
                 print(f"OCR -> {image}")
@@ -37,17 +43,47 @@ while True:
 
                 full_text += text + "\n\n"
 
-            save_raw_text(job.document.id, full_text)
+            # Save OCR text
+            save_raw_text(
+                job.document.id,
+                full_text
+            )
 
-            update_job_status(job.id, "completed")
+           # AI Extraction
+            print("\n========== AI ==========")
 
-            print("✅ OCR Saved Successfully")
+            extracted_data = extract_document_data(
+                full_text
+            )
+
+            print("AI Returned:")
+            print(extracted_data)
+
+            # Save AI extracted JSON
+            save_extracted_data(
+                job.document.id,
+                extracted_data
+            )
+
+            print("AI Data Saved")
+
+            print("========================\n")
+            # Mark job as completed
+            update_job_status(
+                job.id,
+                "completed"
+            )
+
+            print("✅ OCR + AI Extraction Saved Successfully")
 
         except Exception as e:
 
-            print("ERROR:", e)
+            print("❌ ERROR:", e)
 
-            update_job_status(job.id, "failed")
+            update_job_status(
+                job.id,
+                "failed"
+            )
 
     else:
 

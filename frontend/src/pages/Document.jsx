@@ -6,7 +6,7 @@ export default function Document() {
   const { id } = useParams();
 
   const [document, setDocument] = useState(null);
-
+  const [aiData, setAiData] = useState(null);
   useEffect(() => {
     loadDocument();
   }, []);
@@ -14,6 +14,12 @@ export default function Document() {
   const loadDocument = async () => {
     const response = await api.get(`/documents/${id}`);
     setDocument(response.data);
+
+    if (response.data.extracted_data) {
+        setAiData(
+            JSON.parse(response.data.extracted_data)
+        );
+    }
   };
 
   if (!document) {
@@ -46,7 +52,41 @@ export default function Document() {
         </pre>
 
       </div>
+        <div className="mt-8 bg-white shadow rounded-xl p-6">
 
+        <h2 className="text-2xl font-bold mb-4">
+            AI Extracted Data
+        </h2>
+
+       {aiData ? (
+
+        <div className="space-y-4">
+
+            <div>
+            <h3 className="font-semibold">
+                Document Type
+            </h3>
+
+            <p>{aiData.document_type}</p>
+            </div>
+
+            <div>
+            <h3 className="font-semibold">
+                Summary
+            </h3>
+
+            <p>{aiData.summary}</p>
+            </div>
+
+        </div>
+
+        ) : (
+
+        <p>No AI data yet.</p>
+
+        )}
+
+        </div> 
     </div>
   );
 }

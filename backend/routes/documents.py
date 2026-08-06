@@ -43,5 +43,6 @@ def document(document_id: int):
         "status": d.status,
         "document_type": d.document_type,
         "raw_text": d.raw_text,
+        "extracted_data": d.extracted_data,   # ← Make sure this exists
         "created_at": d.created_at
     }
