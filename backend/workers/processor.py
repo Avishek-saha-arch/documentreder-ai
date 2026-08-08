@@ -12,12 +12,13 @@ from services.extraction_service import (
 )
 from services.ai_service import extract_document_data
 
+
 print("🚀 Worker Started")
 
 
 def process_page(image_path):
     """
-    Run OCR on a single page.
+    Run OCR on one page and measure the processing time.
     """
 
     start = time.time()
@@ -44,19 +45,28 @@ while True:
 
         print(f"\nProcessing Job #{job.id}")
 
-        update_job_status(job.id, "running")
+        update_job_status(
+            job.id,
+            "running"
+        )
 
         try:
+
+            # ==============================
+            # PDF
+            # ==============================
 
             pdf_path = (
                 Path("uploads")
                 / job.document.stored_filename
             )
 
-            print(f"Reading PDF: {pdf_path}")
+            print(
+                f"Reading PDF: {pdf_path}"
+            )
 
             # ==============================
-            # PDF → Images
+            # PDF → IMAGES
             # ==============================
 
             image_paths = convert_pdf_to_images(
@@ -64,7 +74,8 @@ while True:
             )
 
             print(
-                f"PDF converted into {len(image_paths)} pages"
+                f"PDF converted into "
+                f"{len(image_paths)} pages"
             )
 
             if not image_paths:
@@ -76,12 +87,10 @@ while True:
             # CONCURRENT OCR
             # ==============================
 
-            ocr_start = time.time()
-
             full_text_parts = []
 
             max_workers = min(
-                2,
+                1,#can iccresse in laptop with higher spec it coule incress till 4 
                 len(image_paths)
             )
 
@@ -95,19 +104,20 @@ while True:
                 )
 
                 for text in results:
-                    full_text_parts.append(text)
 
+                    full_text_parts.append(
+                        text
+                    )
+
+            # Keep pages in original order
             full_text = "\n\n".join(
                 full_text_parts
             )
 
-            ocr_time = time.time() - ocr_start
-
             print("✅ OCR completed")
-            print(f"⏱️ OCR took {ocr_time:.2f} seconds")
 
             # ==============================
-            # SAVE OCR
+            # SAVE OCR TEXT
             # ==============================
 
             save_raw_text(
@@ -115,7 +125,10 @@ while True:
                 full_text
             )
 
-            print("✅ OCR text saved")
+            print(
+                f"Saved OCR text for "
+                f"Document {job.document.id}"
+            )
 
             # ==============================
             # AI EXTRACTION
@@ -131,10 +144,12 @@ while True:
 
             ai_time = time.time() - ai_start
 
-            print(f"⏱️ AI took {ai_time:.2f} seconds")
-
             print("AI Returned:")
             print(extracted_data)
+
+            print(
+                f"⏱️ AI took {ai_time:.2f} seconds"
+            )
 
             # ==============================
             # SAVE AI DATA
@@ -159,13 +174,13 @@ while True:
             )
 
             print(
-                "✅ OCR + AI Extraction Saved Successfully"
+                "✅ OCR + AI Extraction "
+                "Saved Successfully"
             )
 
         except Exception as e:
 
-            print("\n❌ ERROR:")
-            print(e)
+            print("❌ ERROR:", e)
 
             update_job_status(
                 job.id,
